@@ -35,14 +35,16 @@ class Bucket:
         match.
         """
 
+        remote_key = f"s3://{self.name}/{key}"
+
         local_hash = self.local_hashes.get(path)
         remote_hash = self.remote_hashes.get(key)
 
         if local_hash == remote_hash:
             logger.debug(
-                "Won't upload %s because the destination (%s) hash (%s) matches",
+                "Won't upload %s to %s because their hashes match (%s)",
                 path,
-                key,
+                remote_key,
                 local_hash.hex(),
             )
             return
@@ -52,7 +54,7 @@ class Bucket:
                 "Uploading %s (%s) to %s because the destination does not exist",
                 path,
                 local_hash.hex(),
-                key,
+                remote_key,
             )
 
         else:
@@ -60,7 +62,7 @@ class Bucket:
                 "Uploading %s (%s) to %s (%s) because the hashes don't match",
                 path,
                 local_hash.hex(),
-                key,
+                remote_key,
                 remote_hash.hex(),
             )
 
