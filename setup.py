@@ -37,6 +37,7 @@ setup(
     include_package_data=True,
     install_requires=[
         "boto3~=1.0",
+        "cline~=1.0",
     ],
     license="MIT",
     long_description=long_description,

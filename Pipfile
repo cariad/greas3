@@ -17,6 +17,7 @@ yamllint = "~=1.0"
 
 [packages]
 boto3 = "~=1.0"
+cline = "~=1.0"
 
 [requires]
 python_version = "3.9"
