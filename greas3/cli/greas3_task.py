@@ -4,7 +4,7 @@ from cline import CommandLineArguments, Task
 
 from greas3.cli.paths_args import PathsArgs
 from greas3.operations import put
-from greas3.uris import unpack_s3_uri
+from greas3.s3 import unpack_s3_uri
 
 
 class Greas3Task(Task[PathsArgs]):
