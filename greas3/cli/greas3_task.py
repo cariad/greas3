@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from boto3.session import Session
 from cline import CommandLineArguments, Task
 
 from greas3.cli.paths_args import PathsArgs
@@ -13,6 +14,7 @@ class Greas3Task(Task[PathsArgs]):
         return PathsArgs(
             source=args.get_string("source"),
             destination=args.get_string("destination"),
+            session=Session(),
         )
 
     def invoke(self) -> int:
@@ -32,6 +34,6 @@ class Greas3Task(Task[PathsArgs]):
         bucket_name = unpacked_destination[0]
         key = unpacked_destination[1]
 
-        put(source, bucket_name, key)
+        put(source, bucket_name, key, session=self.args.session)
 
         return 0
