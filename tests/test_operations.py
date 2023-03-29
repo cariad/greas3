@@ -2,7 +2,7 @@ from pathlib import Path
 from unittest.mock import Mock
 
 from greas3.difference import Difference
-from greas3.operations import difference
+from greas3.operations import difference, put
 
 
 def test_difference__different_hash(lorum: Path, session: Mock) -> None:
@@ -202,3 +202,49 @@ def test_difference__same_parts_hash__multiple(lorum: Path, session: Mock) -> No
     result = difference(lorum, "my-bucket", "readme.md", session=session)
 
     assert result is None
+
+
+def test_put(lorum: Path, session: Mock) -> None:
+    upload_file = Mock()
+
+    s3 = Mock()
+
+    s3.get_object_attributes = Mock(
+        return_value={
+            "ObjectSize": 2054,
+        }
+    )
+
+    s3.upload_file = upload_file
+
+    session.client = Mock(return_value=s3)
+
+    put(lorum, "my-bucket", "lorum.md", session=session)
+    upload_file.assert_called_with(
+        Bucket="my-bucket",
+        ExtraArgs={"ChecksumAlgorithm": "SHA256"},
+        Filename=lorum.as_posix(),
+        Key="lorum.md",
+    )
+
+
+def test_put__no_upload(lorum: Path, session: Mock) -> None:
+    upload_file = Mock()
+
+    s3 = Mock()
+
+    s3.get_object_attributes = Mock(
+        return_value={
+            "Checksum": {
+                "ChecksumSHA256": "KUPJMIoDWiIgepwgTiTPwbgVPUUC30ZmocG3iA86M90=",
+            },
+            "ObjectSize": 2055,
+        }
+    )
+
+    s3.upload_file = upload_file
+
+    session.client = Mock(return_value=s3)
+
+    put(lorum, "my-bucket", "lorum.md", session=session)
+    upload_file.assert_not_called()
