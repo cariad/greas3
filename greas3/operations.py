@@ -1,7 +1,7 @@
 from base64 import b64decode
 from os.path import getsize
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
 
 from boto3.session import Session
 
@@ -11,7 +11,7 @@ from greas3.logging import logger
 
 
 def difference(
-    path: Path,
+    path: Union[Path, str],
     bucket: str,
     key: str,
     session: Optional[Session] = None,
