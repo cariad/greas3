@@ -1,10 +1,12 @@
 from hashlib import sha256
 from pathlib import Path
-from typing import Optional
+from typing import Optional, Union
+
+from greas3.logging import logger
 
 
 def has_expected_hash(
-    path: Path,
+    path: Union[Path, str],
     expect: bytes,
     offset: int = 0,
     length: Optional[int] = None,
@@ -28,5 +30,22 @@ def has_expected_hash(
 
             if data := f.read(read_len):
                 digest.update(data)
+            elif digest.digest() == expect:
+                logger.debug(
+                    "%s (from byte %s for %s bytes) has expected hash %s",
+                    path,
+                    offset,
+                    length or "all",
+                    expect.hex(),
+                )
+                return True
             else:
-                return digest.digest() == expect
+                logger.debug(
+                    "%s (from byte %s for %s bytes) has hash %s but expected %s",
+                    path,
+                    offset,
+                    length or "all",
+                    digest.digest(),
+                    expect,
+                )
+                return False
