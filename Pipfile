@@ -24,5 +24,6 @@ python_version = "3.9"
 python_full_version = "3.9.16"
 
 [scripts]
+build = "./scripts/build.sh"
 lint = "./scripts/lint.sh"
 test = "./scripts/test.sh"
