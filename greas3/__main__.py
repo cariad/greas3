@@ -1,8 +1,8 @@
-from greas3.cli import Cli
+from greas3.cli import Greas3Cli
 
 
 def entry() -> None:
-    Cli.invoke_and_exit()
+    Greas3Cli.invoke_and_exit()
 
 
 if __name__ == "__main__":
