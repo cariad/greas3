@@ -1,10 +1,34 @@
+from pathlib import Path
 from unittest.mock import Mock
 
 from greas3.difference import Difference
 from greas3.operations import difference
 
 
-def test_difference__size(session: Mock) -> None:
+def test_difference__different_hash(lorum: Path, session: Mock) -> None:
+    s3 = Mock()
+
+    s3.get_object_attributes = Mock(
+        return_value={
+            "Checksum": {
+                "ChecksumSHA256": "",
+            },
+            "ObjectSize": 2055,
+        }
+    )
+
+    session.client = Mock(return_value=s3)
+
+    result = difference(lorum, "my-bucket", "readme.md", session=session)
+
+    assert result == Difference(
+        source=lorum,
+        destination="readme.md",
+        reason="Hashes do not match",
+    )
+
+
+def test_difference__different_length(lorum: Path, session: Mock) -> None:
     get_object_attributes = Mock(
         return_value={
             "ObjectSize": 3,
@@ -17,7 +41,7 @@ def test_difference__size(session: Mock) -> None:
     client = Mock(return_value=s3)
     session.client = client
 
-    result = difference("README.md", "my-bucket", "readme.md", session=session)
+    result = difference(lorum, "my-bucket", "readme.md", session=session)
 
     client.assert_called_once_with("s3")
 
@@ -28,7 +52,153 @@ def test_difference__size(session: Mock) -> None:
     )
 
     assert result == Difference(
-        source="README.md",
+        source=lorum,
         destination="readme.md",
         reason="Destination is a different length",
     )
+
+
+def test_difference__different_parts_hash(lorum: Path, session: Mock) -> None:
+    s3 = Mock()
+
+    s3.get_object_attributes = Mock(
+        return_value={
+            "ObjectParts": {
+                "Parts": [
+                    {
+                        "Size": 512,
+                        "ChecksumSHA256": "",
+                    }
+                ]
+            },
+            "ObjectSize": 2055,
+        }
+    )
+
+    session.client = Mock(return_value=s3)
+
+    result = difference(lorum, "my-bucket", "readme.md", session=session)
+
+    assert result == Difference(
+        source=lorum,
+        destination="readme.md",
+        reason="Hashes do not match",
+    )
+
+
+def test_difference__different_parts_hash__multiple(lorum: Path, session: Mock) -> None:
+    s3 = Mock()
+
+    s3.get_object_attributes = Mock(
+        side_effect=[
+            {
+                "ObjectParts": {
+                    "NextPartNumberMarker": 1,
+                    "Parts": [
+                        {
+                            "Size": 512,
+                            "ChecksumSHA256": "ogxgwa5eW+Hb+xVVa+cRw/uoNIgey8JfT2GITb1sRT4=",  # noqa: E501
+                        }
+                    ],
+                },
+                "ObjectSize": 2055,
+            },
+            {
+                "ObjectParts": {
+                    "Parts": [
+                        {
+                            "Size": 512,
+                            "ChecksumSHA256": "",
+                        }
+                    ]
+                },
+            },
+        ]
+    )
+
+    session.client = Mock(return_value=s3)
+
+    result = difference(lorum, "my-bucket", "readme.md", session=session)
+
+    assert result == Difference(
+        source=lorum,
+        destination="readme.md",
+        reason="Hashes do not match",
+    )
+
+
+def test_difference__does_not_exist(lorum: Path, session: Mock) -> None:
+    no_such_key = ValueError
+
+    exceptions = Mock()
+    exceptions.NoSuchKey = no_such_key
+
+    s3 = Mock()
+    s3.exceptions = exceptions
+    s3.get_object_attributes = Mock(side_effect=ValueError)
+
+    session.client = Mock(return_value=s3)
+
+    result = difference(lorum, "my-bucket", "readme.md", session=session)
+
+    assert result == Difference(
+        source=lorum,
+        destination="readme.md",
+        reason="Destination does not exist",
+    )
+
+
+def test_difference__same_hash(lorum: Path, session: Mock) -> None:
+    s3 = Mock()
+
+    s3.get_object_attributes = Mock(
+        return_value={
+            "Checksum": {
+                "ChecksumSHA256": "KUPJMIoDWiIgepwgTiTPwbgVPUUC30ZmocG3iA86M90=",
+            },
+            "ObjectSize": 2055,
+        }
+    )
+
+    session.client = Mock(return_value=s3)
+
+    result = difference(lorum, "my-bucket", "readme.md", session=session)
+
+    assert result is None
+
+
+def test_difference__same_parts_hash__multiple(lorum: Path, session: Mock) -> None:
+    s3 = Mock()
+
+    s3.get_object_attributes = Mock(
+        side_effect=[
+            {
+                "ObjectParts": {
+                    "NextPartNumberMarker": 1,
+                    "Parts": [
+                        {
+                            "Size": 512,
+                            "ChecksumSHA256": "ogxgwa5eW+Hb+xVVa+cRw/uoNIgey8JfT2GITb1sRT4=",  # noqa: E501
+                        }
+                    ],
+                },
+                "ObjectSize": 2055,
+            },
+            {
+                "ObjectParts": {
+                    "Parts": [
+                        {
+                            "Size": 512,
+                            "ChecksumSHA256": "BjUOo+SH4qnMBqrkwbGsqgmWo4sekhx7OJVSdWEQW4k=",  # noqa: E501
+                        }
+                    ]
+                },
+            },
+        ]
+    )
+
+    session.client = Mock(return_value=s3)
+
+    result = difference(lorum, "my-bucket", "readme.md", session=session)
+
+    assert result is None

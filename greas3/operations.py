@@ -45,26 +45,18 @@ def difference(
         offset = 0
 
         while True:
-            try:
-                for part in response["ObjectParts"]["Parts"]:
-                    length = part["Size"]
-                    expect = b64decode(part["ChecksumSHA256"])
-                    offset += length
+            for part in response["ObjectParts"]["Parts"]:
+                length = part["Size"]
+                expect = b64decode(part["ChecksumSHA256"])
 
-                    if not has_expected_hash(
-                        path,
-                        expect,
-                        offset=offset,
-                        length=length,
-                    ):
-                        return Difference(path, key, "Hashes do not match")
+                if not has_expected_hash(path, expect, offset=offset, length=length):
+                    return Difference(path, key, "Hashes do not match")
 
-            except KeyError:
-                raise
+                offset += length
 
             next_marker = response["ObjectParts"].get("NextPartNumberMarker")
 
-            if not next_marker:
+            if next_marker is None:
                 return None
 
             response = s3.get_object_attributes(
