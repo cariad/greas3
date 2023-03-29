@@ -45,11 +45,9 @@ setup(
     name="greas3",
     packages=[
         "greas3",
-        "greas3.hashes",
     ],
     package_data={
         "greas3": ["py.typed"],
-        "greas3.hashes": ["py.typed"],
     },
     python_requires=">=3.9",
     url="https://github.com/cariad/greas3",
