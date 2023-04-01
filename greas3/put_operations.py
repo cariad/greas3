@@ -26,9 +26,6 @@ class PutOperations:
         root_dir: Path,
         root_uri: S3Uri,
     ) -> None:
-        if not root_dir.is_dir():
-            raise ValueError(f'"{root_dir}" must be a directory')
-
         self._operations: List[PutOperation] = []
 
         self.longest_relative_path = 0

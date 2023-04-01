@@ -9,8 +9,13 @@ logger.setLevel("DEBUG")
 
 
 @fixture
-def lorum() -> Path:
-    return Path(__file__).parent / "lorum.txt"
+def data_dir() -> Path:
+    return Path(__file__).parent / "data"
+
+
+@fixture
+def lorum(data_dir: Path) -> Path:
+    return data_dir / "lorum.txt"
 
 
 @fixture

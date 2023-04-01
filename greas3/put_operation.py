@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import Any
 
 from boto3.session import Session
 from slash3 import S3Uri
@@ -22,6 +23,15 @@ class PutOperation:
         self.relative_path = relative_path
         self.uri = uri
         self.relative_uri = relative_uri
+
+    def __eq__(self, other: Any) -> bool:
+        return (
+            isinstance(other, PutOperation)
+            and self.path == other.path
+            and self.relative_path == other.relative_path
+            and self.uri == other.uri
+            and self.relative_uri == other.relative_uri
+        )
 
     def same(self, session: Session) -> bool:
         """
