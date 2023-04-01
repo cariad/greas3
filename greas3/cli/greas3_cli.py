@@ -9,14 +9,13 @@ class Greas3Cli(ArgumentParserCli):
     def make_parser(self) -> ArgumentParser:
         parser = ArgumentParser()
 
-        parser.add_argument(
-            "source",
-            help="source",
-        )
+        parser.add_argument("source", help="source")
+        parser.add_argument("destination", help="destination")
 
         parser.add_argument(
-            "destination",
-            help="destination",
+            "--dry-run",
+            help="Perform a dry-run",
+            action="store_true",
         )
 
         return parser

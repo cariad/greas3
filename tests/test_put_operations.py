@@ -14,13 +14,32 @@ def test_from_dir(data_dir: Path) -> None:
 
     expect: List[PutOperation] = [
         PutOperation(
-            data_dir / "lorum.txt", "lorum.txt", uri / "lorum.txt", "lorum.txt"
+            data_dir / "lorum.txt",
+            "lorum.txt",
+            uri / "lorum.txt",
+            "lorum.txt",
         ),
         PutOperation(
             data_dir / "movies" / "star-wars.txt",
             f"movies{sep}star-wars.txt",
             uri / "movies/star-wars.txt",
             "movies/star-wars.txt",
+        ),
+    ]
+
+    assert operations.operations == expect
+
+
+def test_from_file__uri_slash(lorum: Path) -> None:
+    uri = S3Uri("s3://stuff/inbox/")
+    operations = PutOperations.from_file(lorum, uri)
+
+    expect: List[PutOperation] = [
+        PutOperation(
+            lorum,
+            "lorum.txt",
+            uri / "lorum.txt",
+            "lorum.txt",
         ),
     ]
 

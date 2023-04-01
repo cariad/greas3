@@ -1,11 +1,12 @@
 from pathlib import Path
-from typing import Optional, Union
+from typing import List, Optional, Union
 
 from ansiscape import green, heavy, yellow
 from boto3.session import Session
 from slash3 import S3Uri
 
 from greas3.logging import logger
+from greas3.put_operation import PutOperation
 from greas3.put_operations import PutOperations
 
 
@@ -15,12 +16,14 @@ def put(
     dry_run: bool = False,
     session: Optional[Session] = None,
     silent: bool = False,
-) -> None:
+) -> List[PutOperation]:
     """
-    Uploads a local file to S3 as long as the remote file doesn't exist or is
-    different.
+    Uploads a local file or directory to S3 if they're new or different.
 
-    `dry_run` will log the uploads but not perform them.
+    Returns a list of every upload operation. Each operation indicates whether
+    or not an upload was warranted.
+
+    `dry_run` will discover the required operations but will not perform them.
 
     `session` is an optional Boto3 session. A new session will be created if
     omitted.
@@ -33,26 +36,37 @@ def put(
 
     if path.is_dir():
         operations = PutOperations.from_dir(path, uri)
-        if not silent:
-            logger.info(
-                "%s   %s",
-                heavy(path.as_posix().ljust(operations.longest_relative_path)),
-                heavy("s3://", yellow(uri.bucket), "/", uri.key.key),
-            )
-
+        path_title = path.as_posix()
+        uri_title = uri.uri
     else:
         operations = PutOperations.from_file(path, uri)
+        path_title = path.parent.as_posix()
+        if uri.uri.endswith("/"):
+            uri_title = uri.uri
+        else:
+            uri_title = uri.parent.uri
+
+    path_len = max(operations.longest_relative_path, len(path_title))
+
+    if not silent:
+        logger.info(
+            "%s   %s",
+            heavy(path_title.ljust(path_len)),
+            heavy(uri_title),
+        )
 
     session = session or Session()
     s3 = session.client("s3")
 
+    ordered_operations = operations.operations
+
     for op in operations.operations:
-        same = op.same(session)
+        same = op.are_same(session)
 
         if not silent:
             logger.info(
                 "%s %s %s",
-                op.relative_path.ljust(operations.longest_relative_path),
+                op.relative_path.ljust(path_len),
                 green("=") if same else yellow(">"),
                 op.relative_uri,
             )
@@ -66,3 +80,5 @@ def put(
             Filename=op.path.as_posix(),
             Key=op.uri.key.key,
         )
+
+    return ordered_operations

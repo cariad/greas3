@@ -91,6 +91,9 @@ class PutOperations:
         `path` to `uri`.
         """
 
+        if uri.uri.endswith("/"):
+            uri /= path.name
+
         operations = PutOperations(path.parent, uri.parent)
         operations.add(path, uri)
 

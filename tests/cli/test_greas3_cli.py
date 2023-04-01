@@ -18,6 +18,17 @@ from greas3.cli.paths_args import PathsArgs
             PathsArgs(
                 source="foo.txt",
                 destination="s3://my-bucket/bar.txt",
+                dry_run=False,
+                session=ANY,
+            ),
+        ),
+        (
+            ["foo.txt", "s3://my-bucket/bar.txt", "--dry-run"],
+            Greas3Task,
+            PathsArgs(
+                source="foo.txt",
+                destination="s3://my-bucket/bar.txt",
+                dry_run=True,
                 session=ANY,
             ),
         ),

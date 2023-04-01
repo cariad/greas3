@@ -22,6 +22,7 @@ def test_make_args() -> None:
     assert args == PathsArgs(
         source="foo.txt",
         destination="s3://my-bucket/bar.txt",
+        dry_run=False,
         session=ANY,
     )
 
@@ -30,6 +31,7 @@ def test_invoke(session: Mock) -> None:
     args = PathsArgs(
         source="foo.txt",
         destination="s3://my-bucket/bar.txt",
+        dry_run=True,
         session=session,
     )
 
@@ -42,6 +44,7 @@ def test_invoke(session: Mock) -> None:
     put.assert_called_once_with(
         Path("foo.txt"),
         S3Uri("s3://my-bucket/bar.txt"),
+        dry_run=True,
         session=session,
     )
 
