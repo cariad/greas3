@@ -74,6 +74,27 @@ def test_put__file(lorum: Path, s3: Mock, session: Mock) -> None:
     )
 
 
+def test_put__file__same_filename(lorum: Path, s3: Mock, session: Mock) -> None:
+    upload_file = Mock()
+
+    s3.get_object_attributes = Mock(
+        return_value={
+            "ObjectSize": 2054,
+        }
+    )
+
+    s3.upload_file = upload_file
+
+    put(lorum, "s3://my-bucket/", session=session)
+
+    upload_file.assert_called_with(
+        Bucket="my-bucket",
+        ExtraArgs={"ChecksumAlgorithm": "SHA256"},
+        Filename=lorum.as_posix(),
+        Key="lorum.txt",
+    )
+
+
 def test_put__file__no_upload(lorum: Path, s3: Mock, session: Mock) -> None:
     upload_file = Mock()
 

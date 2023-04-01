@@ -31,6 +31,31 @@ def test_invoke(session: Mock) -> None:
     args = PathsArgs(
         source="foo.txt",
         destination="s3://my-bucket/bar.txt",
+        dry_run=False,
+        session=session,
+    )
+
+    out = StringIO()
+    task = Greas3Task(args, out)
+
+    with patch("greas3.cli.greas3_task.put") as put:
+        exit_code = task.invoke()
+
+    put.assert_called_once_with(
+        Path("foo.txt"),
+        S3Uri("s3://my-bucket/bar.txt"),
+        dry_run=False,
+        session=session,
+    )
+
+    assert exit_code == 0
+    assert out.getvalue() == ""
+
+
+def test_invoke__dry_run(session: Mock) -> None:
+    args = PathsArgs(
+        source="foo.txt",
+        destination="s3://my-bucket/bar.txt",
         dry_run=True,
         session=session,
     )
