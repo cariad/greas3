@@ -1,10 +1,59 @@
 from pathlib import Path
-from unittest.mock import Mock
+from unittest.mock import Mock, call
 
 from greas3.operations import put
 
 
-def test_put(lorum: Path, s3: Mock, session: Mock) -> None:
+def test_put__directory(data_dir: Path, s3: Mock, session: Mock) -> None:
+    upload_file = Mock()
+
+    s3.get_object_attributes = Mock(
+        return_value={
+            "ObjectSize": 2054,
+        }
+    )
+
+    s3.upload_file = upload_file
+
+    put(data_dir, "s3://my-bucket/", session=session)
+
+    assert upload_file.call_count == 2
+
+    upload_file.assert_has_calls(
+        [
+            call(
+                Bucket="my-bucket",
+                ExtraArgs={"ChecksumAlgorithm": "SHA256"},
+                Filename=(data_dir / "lorum.txt").as_posix(),
+                Key="lorum.txt",
+            ),
+            call(
+                Bucket="my-bucket",
+                ExtraArgs={"ChecksumAlgorithm": "SHA256"},
+                Filename=(data_dir / "movies" / "star-wars.txt").as_posix(),
+                Key="movies/star-wars.txt",
+            ),
+        ]
+    )
+
+
+def test_put__directory__dry_run(data_dir: Path, s3: Mock, session: Mock) -> None:
+    upload_file = Mock()
+
+    s3.get_object_attributes = Mock(
+        return_value={
+            "ObjectSize": 2054,
+        }
+    )
+
+    s3.upload_file = upload_file
+
+    put(data_dir, "s3://my-bucket/", dry_run=True, session=session)
+
+    upload_file.assert_not_called()
+
+
+def test_put__file(lorum: Path, s3: Mock, session: Mock) -> None:
     upload_file = Mock()
 
     s3.get_object_attributes = Mock(
@@ -25,7 +74,7 @@ def test_put(lorum: Path, s3: Mock, session: Mock) -> None:
     )
 
 
-def test_put__no_upload(lorum: Path, s3: Mock, session: Mock) -> None:
+def test_put__file__no_upload(lorum: Path, s3: Mock, session: Mock) -> None:
     upload_file = Mock()
 
     s3.get_object_attributes = Mock(
