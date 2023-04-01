@@ -10,9 +10,16 @@ logger.setLevel("DEBUG")
 
 @fixture
 def lorum() -> Path:
-    return Path() / "tests" / "lorum.txt"
+    return Path(__file__).parent / "lorum.txt"
 
 
 @fixture
-def session() -> Mock:
+def s3() -> Mock:
     return Mock()
+
+
+@fixture
+def session(s3: Mock) -> Mock:
+    session = Mock()
+    session.client = Mock(return_value=s3)
+    return session

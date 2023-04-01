@@ -16,8 +16,10 @@ twine = "~=4.0"
 yamllint = "~=1.0"
 
 [packages]
+ansiscape = "~=1.0"
 boto3 = "~=1.0"
 cline = "~=1.0"
+slash3 = "==1.0.0a5"
 
 [requires]
 python_version = "3.9"

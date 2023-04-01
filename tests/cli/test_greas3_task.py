@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import ANY, Mock, patch
 
 from cline import CommandLineArguments
+from slash3 import S3Uri
 
 from greas3.cli.greas3_task import Greas3Task
 from greas3.cli.paths_args import PathsArgs
@@ -40,8 +41,7 @@ def test_invoke(session: Mock) -> None:
 
     put.assert_called_once_with(
         Path("foo.txt"),
-        "my-bucket",
-        "bar.txt",
+        S3Uri("s3://my-bucket/bar.txt"),
         session=session,
     )
 

@@ -36,8 +36,10 @@ setup(
     description="Synchronises S3 buckets with local directories",
     include_package_data=True,
     install_requires=[
+        "ansiscape~=1.0",
         "boto3~=1.0",
         "cline~=1.0",
+        "slash3==1.0.0a5",
     ],
     license="MIT",
     long_description=long_description,
