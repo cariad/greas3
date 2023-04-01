@@ -34,6 +34,11 @@ setup(
     author_email="cariad@cariad.earth",
     classifiers=classifiers,
     description="Synchronises S3 buckets with local directories",
+    entry_points={
+        "console_scripts": [
+            "greas3=greas3.__main__:entry",
+        ],
+    },
     include_package_data=True,
     install_requires=[
         "ansiscape~=1.0",
