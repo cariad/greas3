@@ -3,6 +3,7 @@ from pathlib import Path
 from unittest.mock import ANY, Mock, patch
 
 from cline import CommandLineArguments
+from slash3 import S3Uri
 
 from greas3.cli.greas3_task import Greas3Task
 from greas3.cli.paths_args import PathsArgs
@@ -21,6 +22,7 @@ def test_make_args() -> None:
     assert args == PathsArgs(
         source="foo.txt",
         destination="s3://my-bucket/bar.txt",
+        dry_run=False,
         session=ANY,
     )
 
@@ -29,6 +31,7 @@ def test_invoke(session: Mock) -> None:
     args = PathsArgs(
         source="foo.txt",
         destination="s3://my-bucket/bar.txt",
+        dry_run=False,
         session=session,
     )
 
@@ -40,8 +43,33 @@ def test_invoke(session: Mock) -> None:
 
     put.assert_called_once_with(
         Path("foo.txt"),
-        "my-bucket",
-        "bar.txt",
+        S3Uri("s3://my-bucket/bar.txt"),
+        dry_run=False,
+        session=session,
+    )
+
+    assert exit_code == 0
+    assert out.getvalue() == ""
+
+
+def test_invoke__dry_run(session: Mock) -> None:
+    args = PathsArgs(
+        source="foo.txt",
+        destination="s3://my-bucket/bar.txt",
+        dry_run=True,
+        session=session,
+    )
+
+    out = StringIO()
+    task = Greas3Task(args, out)
+
+    with patch("greas3.cli.greas3_task.put") as put:
+        exit_code = task.invoke()
+
+    put.assert_called_once_with(
+        Path("foo.txt"),
+        S3Uri("s3://my-bucket/bar.txt"),
+        dry_run=True,
         session=session,
     )
 
