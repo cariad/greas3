@@ -30,13 +30,13 @@ def test_from_dir(data_dir: Path) -> None:
     assert operations.operations == expect
 
 
-def test_from_file__uri_slash(lorum: Path) -> None:
+def test_from_file__uri_slash(lorum_path: Path) -> None:
     uri = S3Uri("s3://stuff/inbox/")
-    operations = PutOperations.from_file(lorum, uri)
+    operations = PutOperations.from_file(lorum_path, uri)
 
     expect: List[PutOperation] = [
         PutOperation(
-            lorum,
+            lorum_path,
             "lorum.txt",
             uri / "lorum.txt",
             "lorum.txt",

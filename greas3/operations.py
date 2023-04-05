@@ -15,7 +15,6 @@ def put(
     uri: Union[S3Uri, str],
     dry_run: bool = False,
     session: Optional[Session] = None,
-    silent: bool = False,
 ) -> List[PutOperation]:
     """
     Uploads a local file or directory to S3 if they're new or different.
@@ -27,8 +26,6 @@ def put(
 
     `session` is an optional Boto3 session. A new session will be created if
     omitted.
-
-    `silent` mutes all progress logging.
     """
 
     path = Path(path) if isinstance(path, str) else path
@@ -48,12 +45,11 @@ def put(
 
     path_len = max(operations.longest_relative_path, len(path_title))
 
-    if not silent:
-        logger.info(
-            "%s   %s",
-            heavy(path_title.ljust(path_len)),
-            heavy(uri_title),
-        )
+    logger.info(
+        "%s   %s",
+        heavy(path_title.ljust(path_len)),
+        heavy(uri_title),
+    )
 
     session = session or Session()
     s3 = session.client("s3")
@@ -63,13 +59,12 @@ def put(
     for op in operations.operations:
         same = op.are_same(session)
 
-        if not silent:
-            logger.info(
-                "%s %s %s",
-                op.relative_path.ljust(path_len),
-                green("=") if same else yellow(">"),
-                op.relative_uri,
-            )
+        logger.info(
+            "%s %s %s",
+            op.relative_path.ljust(path_len),
+            green("=") if same else yellow(">"),
+            op.relative_uri,
+        )
 
         if same or dry_run:
             continue

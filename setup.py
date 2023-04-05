@@ -43,8 +43,9 @@ setup(
     install_requires=[
         "ansiscape~=1.0",
         "boto3~=1.0",
+        "checksome~=1.0",
         "cline~=1.0",
-        "slash3==1.0.0a5",
+        "slash3~=1.0",
     ],
     license="MIT",
     long_description=long_description,
