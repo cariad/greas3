@@ -1,7 +1,7 @@
 from pathlib import Path
 from unittest.mock import Mock
 
-from pytest import fixture
+from pytest import fixture, raises
 from slash3 import S3Uri
 
 from greas3.check import are_same
@@ -13,7 +13,7 @@ def uri() -> S3Uri:
 
 
 def test_are_same__different_hash(
-    lorum: Path,
+    lorum_path: Path,
     s3: Mock,
     session: Mock,
     uri: S3Uri,
@@ -25,11 +25,11 @@ def test_are_same__different_hash(
         }
     )
 
-    assert not are_same(lorum, uri, session)
+    assert not are_same(lorum_path, uri, session)
 
 
 def test_are_same__different_length(
-    lorum: Path,
+    lorum_path: Path,
     s3: Mock,
     session: Mock,
     uri: S3Uri,
@@ -38,7 +38,7 @@ def test_are_same__different_length(
 
     s3.get_object_attributes = get_object_attributes
 
-    result = are_same(lorum, uri, session)
+    result = are_same(lorum_path, uri, session)
 
     get_object_attributes.assert_called_once_with(
         Bucket="my-bucket",
@@ -50,7 +50,7 @@ def test_are_same__different_length(
 
 
 def test_are_same__different_parts_hash(
-    lorum: Path,
+    lorum_path: Path,
     s3: Mock,
     session: Mock,
     uri: S3Uri,
@@ -69,11 +69,11 @@ def test_are_same__different_parts_hash(
         }
     )
 
-    assert not are_same(lorum, uri, session)
+    assert not are_same(lorum_path, uri, session)
 
 
 def test_are_same__different_parts_hash__multiple(
-    lorum: Path,
+    lorum_path: Path,
     s3: Mock,
     session: Mock,
     uri: S3Uri,
@@ -105,11 +105,11 @@ def test_are_same__different_parts_hash__multiple(
         ]
     )
 
-    assert not are_same(lorum, uri, session)
+    assert not are_same(lorum_path, uri, session)
 
 
 def test_are_same__does_not_exist(
-    lorum: Path,
+    lorum_path: Path,
     s3: Mock,
     session: Mock,
     uri: S3Uri,
@@ -122,11 +122,35 @@ def test_are_same__does_not_exist(
     s3.exceptions = exceptions
     s3.get_object_attributes = Mock(side_effect=ValueError)
 
-    assert not are_same(lorum, uri, session)
+    assert not are_same(lorum_path, uri, session)
+
+
+def test_are_same__invalid_response(
+    lorum_path: Path,
+    s3: Mock,
+    session: Mock,
+    uri: S3Uri,
+) -> None:
+    s3.get_object_attributes = Mock(
+        return_value={
+            "ObjectParts": {
+                "Ports": [
+                    {
+                        "Size": 512,
+                        "ChecksumSHA256": "",
+                    }
+                ]
+            },
+            "ObjectSize": 2055,
+        }
+    )
+
+    with raises(KeyError):
+        are_same(lorum_path, uri, session)
 
 
 def test_are_same__same_hash(
-    lorum: Path,
+    lorum_path: Path,
     s3: Mock,
     session: Mock,
     uri: S3Uri,
@@ -140,11 +164,11 @@ def test_are_same__same_hash(
         }
     )
 
-    assert are_same(lorum, uri, session)
+    assert are_same(lorum_path, uri, session)
 
 
 def test_are_same__same_parts_hash__multiple(
-    lorum: Path,
+    lorum_path: Path,
     s3: Mock,
     session: Mock,
     uri: S3Uri,
@@ -176,4 +200,4 @@ def test_are_same__same_parts_hash__multiple(
         ]
     )
 
-    assert are_same(lorum, uri, session)
+    assert are_same(lorum_path, uri, session)

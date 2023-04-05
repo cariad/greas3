@@ -37,7 +37,11 @@ def test_put__directory(data_dir: Path, s3: Mock, session: Mock) -> None:
     )
 
 
-def test_put__directory__dry_run(data_dir: Path, s3: Mock, session: Mock) -> None:
+def test_put__directory__dry_run(
+    data_dir: Path,
+    s3: Mock,
+    session: Mock,
+) -> None:
     upload_file = Mock()
 
     s3.get_object_attributes = Mock(
@@ -53,7 +57,7 @@ def test_put__directory__dry_run(data_dir: Path, s3: Mock, session: Mock) -> Non
     upload_file.assert_not_called()
 
 
-def test_put__file(lorum: Path, s3: Mock, session: Mock) -> None:
+def test_put__file(lorum_path: Path, s3: Mock, session: Mock) -> None:
     upload_file = Mock()
 
     s3.get_object_attributes = Mock(
@@ -64,17 +68,21 @@ def test_put__file(lorum: Path, s3: Mock, session: Mock) -> None:
 
     s3.upload_file = upload_file
 
-    put(lorum, "s3://my-bucket/lorum-copy.txt", session=session)
+    put(lorum_path, "s3://my-bucket/lorum-copy.txt", session=session)
 
     upload_file.assert_called_with(
         Bucket="my-bucket",
         ExtraArgs={"ChecksumAlgorithm": "SHA256"},
-        Filename=lorum.as_posix(),
+        Filename=lorum_path.as_posix(),
         Key="lorum-copy.txt",
     )
 
 
-def test_put__file__same_filename(lorum: Path, s3: Mock, session: Mock) -> None:
+def test_put__file__same_filename(
+    lorum_path: Path,
+    s3: Mock,
+    session: Mock,
+) -> None:
     upload_file = Mock()
 
     s3.get_object_attributes = Mock(
@@ -85,17 +93,21 @@ def test_put__file__same_filename(lorum: Path, s3: Mock, session: Mock) -> None:
 
     s3.upload_file = upload_file
 
-    put(lorum, "s3://my-bucket/", session=session)
+    put(lorum_path, "s3://my-bucket/", session=session)
 
     upload_file.assert_called_with(
         Bucket="my-bucket",
         ExtraArgs={"ChecksumAlgorithm": "SHA256"},
-        Filename=lorum.as_posix(),
+        Filename=lorum_path.as_posix(),
         Key="lorum.txt",
     )
 
 
-def test_put__file__no_upload(lorum: Path, s3: Mock, session: Mock) -> None:
+def test_put__file__no_upload(
+    lorum_path: Path,
+    s3: Mock,
+    session: Mock,
+) -> None:
     upload_file = Mock()
 
     s3.get_object_attributes = Mock(
@@ -109,5 +121,5 @@ def test_put__file__no_upload(lorum: Path, s3: Mock, session: Mock) -> None:
 
     s3.upload_file = upload_file
 
-    put(lorum, "s3://my-bucket/lorum-copy.txt", session=session)
+    put(lorum_path, "s3://my-bucket/lorum-copy.txt", session=session)
     upload_file.assert_not_called()
