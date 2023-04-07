@@ -64,8 +64,21 @@ def are_same(local: Path, uri: S3Uri, session: Session) -> bool:
                 total_parts = parts.get("TotalPartsCount", 0)
                 next_marker = parts.get("NextPartNumberMarker", None)
 
-                if next_marker is None or next_marker <= total_parts:
+                logger.debug(
+                    "Checking pagination: "
+                    "TotalPartsCount=%s, NextPartNumberMarker=%s",
+                    total_parts,
+                    next_marker,
+                )
+
+                if next_marker is None or next_marker == total_parts:
+                    logger.debug("Finished paginating %s parts", total_parts)
                     return True
+
+                logger.debug(
+                    "Requesting next page: PartNumberMarker=%s",
+                    next_marker,
+                )
 
                 response = s3.get_object_attributes(
                     Bucket=uri.bucket,

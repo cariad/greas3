@@ -26,6 +26,12 @@ class Greas3Cli(ArgumentParserCli):
         )
 
         parser.add_argument(
+            "--debug",
+            help="enable debug logging",
+            action="store_true",
+        )
+
+        parser.add_argument(
             "--dry-run",
             help="perform a dry-run",
             action="store_true",

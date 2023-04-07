@@ -46,20 +46,14 @@ $ greas3 ./party-time/ s3://circus/inbox/
 /home/cariad/party-time/   s3://circus/inbox/
 good-clowns/steve.jpg    = good-clowns/steve.jpg
 evil-clowns/jacob.jpg    = evil-clowns/jacob.jpg
-```
-
-Pass `--dry-run` to view the enqueued uploads without performing them:
-
-```shell
-$ greas3 ./party-time/ s3://circus/inbox/
-
-/home/cariad/party-time/   s3://circus/inbox/
-good-clowns/steve.jpg    = good-clowns/steve.jpg
-evil-clowns/jacob.jpg    = evil-clowns/jacob.jpg
 group-hug.jpg            > group-hug.jpg
 ```
 
 `=` indicates that a file hasn't changed and so won't be uploaded. `>` indicates the file will be uploaded.
+
+Pass `--debug` to enable debug logging.
+
+Pass `--dry-run` to view the enqueued uploads without performing them.
 
 ## Python usage
 
