@@ -1,7 +1,7 @@
+from logging import DEBUG
 from pathlib import Path
 
 from ansiscape import light
-from boto3.session import Session
 from cline import CommandLineArguments, Task
 from slash3 import S3Uri
 
@@ -13,17 +13,17 @@ from greas3.operations import put
 class Greas3Task(Task[PathsArgs]):
     @classmethod
     def make_args(cls, args: CommandLineArguments) -> PathsArgs:
-        dry_run = args.get_bool("dry_run", False)
-        logger.debug("Creating PathsArgs with dry_run=%s", dry_run)
-
         return PathsArgs(
-            source=args.get_string("source"),
+            debug=args.get_bool("debug", False),
             destination=args.get_string("destination"),
-            dry_run=dry_run,
-            session=Session(),
+            dry_run=args.get_bool("dry_run", False),
+            source=args.get_string("source"),
         )
 
     def invoke(self) -> int:
+        if self.args.debug:
+            logger.setLevel(DEBUG)
+
         source = Path(self.args.source)
         destination = S3Uri(self.args.destination)
 
